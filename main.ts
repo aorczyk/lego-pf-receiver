@@ -317,10 +317,25 @@ pfReceiver.onRCcommand(0, RCbutton.Red_Forward, IrButtonAction.Pressed, () => {
 })
 
 pfReceiver.onRCcommand(0, RCbutton.Red_Forward, IrButtonAction.Released, () => {
-    basic.showIcon(IconNames.Happy)
+    basic.showIcon(IconNames.Heart)
 })
 
 pfReceiver.onRCcommand(0, RCbutton.Red_Backward, IrButtonAction.Pressed, () => {
     counter -= 1;
+    basic.showNumber(counter)
+})
+
+
+pfReceiver.onRCcommand(0, RCbutton.Blue_Forward, IrButtonAction.Pressed, () => {
+    counter += 2;
+    basic.showNumber(counter)
+})
+
+pfReceiver.onRCcommand(0, RCbutton.Blue_Forward, IrButtonAction.Released, () => {
+    basic.showIcon(IconNames.Duck)
+})
+
+pfReceiver.onRCcommand(0, RCbutton.Blue_Backward, IrButtonAction.Pressed, () => {
+    counter -= 2;
     basic.showNumber(counter)
 })
