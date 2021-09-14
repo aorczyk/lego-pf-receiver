@@ -1,31 +1,38 @@
 const enum RCbutton {
+    //% block="Any"
     Any = -1,
-    Red_Float = 10000,
-    Red_Forward = 10001,
-    Red_Backward = 10010,
-    Red_Break = 10011,
-
-    Blue_Float = 10000,
-    Blue_Forward = 10100,
-    Blue_Backward = 11000,
-    Blue_Break = 11100,
+    //% block="Float"
+    Float = 0,
+    //% block="Forward"
+    Forward = 1,
+    //% block="Backward"
+    Backward = 10,
+    //% block="Break"
+    Break = 11,
 }
 
 const enum SpeedRCbutton {
+    //% block="Any"
     Any = -1,
+    //% block="Red Increment"
     Red_Increment = 1100100,
+    //% block="Red Decrement"
     Red_Decrement = 1100101,
+    //% block="Red Break"
     Red_Brake = 1001000,
 
+    //% block="Blue Increment"
     Blue_Increment = 1110100,
+    //% block="Blue Decrement"
     Blue_Decrement = 1110101,
+    //% block="Blue Break"
     Blue_Brake = 1011000,
 }
 
 const enum IrButtonAction {
-    //% block="pressed"
+    //% block="Pressed"
     Pressed = 0,
-    //% block="released"
+    //% block="Released"
     Released = 1,
 }
 
@@ -34,6 +41,7 @@ namespace pfReceiver {
     const PF_RECEIVER_IR_BUTTON_PRESSED_ID = 789;
     const PF_RECEIVER_IR_BUTTON_RELEASED_ID = 790;
 
+    export let debug: boolean = false;
     let bitsReceived = 0;
     let nibble1: uint8 = null;
     let nibble2: uint8 = null;
@@ -102,8 +110,13 @@ namespace pfReceiver {
     function process() {
         if (bitsReceived === 16 && (15 ^ nibble1 ^ nibble2 ^ data) === lrc) {
             newCommand = getCommand(channel, mode, data);
+            
+            if (debug){
+                serial.writeNumbers(bits)
+                serial.writeNumbers([channel, mode, data, newCommand])
+            }
 
-            if (lastToggle != toggle) {// || mode == 1
+            if (lastToggle != toggle || (mode == 1 && activeCommand != newCommand)) {
                 if (activeCommand >= 0) {
                     control.raiseEvent(
                         PF_RECEIVER_IR_BUTTON_RELEASED_ID,
@@ -111,15 +124,13 @@ namespace pfReceiver {
                     );
                 }
 
-                activeCommand = newCommand;
                 control.raiseEvent(
                     PF_RECEIVER_IR_BUTTON_PRESSED_ID,
                     newCommand
                 );
-                lastToggle = toggle;
 
-                serial.writeNumbers([channel, mode, data, newCommand])
-                serial.writeNumbers(bits)
+                activeCommand = newCommand;
+                lastToggle = toggle;
             }
         }
         resetState()
@@ -186,6 +197,7 @@ namespace pfReceiver {
         pin: DigitalPin
     ): void {
         enableIrMarkSpaceDetection(pin);
+        resetState();
     }
 
     /**
@@ -240,17 +252,18 @@ namespace pfReceiver {
 
     export function onRCcommand(
         channel: number,
-        button: RCbutton,
+        red: RCbutton,
+        blue: RCbutton,
         action: IrButtonAction,
         handler: () => void
     ) {
-        let command = (channel << 7) + bin_to_dec(button);
+        let command = (((channel << 3) + 1 << 2) + bin_to_dec(blue) << 2) + bin_to_dec(red);
 
         control.onEvent(
             action === IrButtonAction.Pressed
                 ? PF_RECEIVER_IR_BUTTON_PRESSED_ID
                 : PF_RECEIVER_IR_BUTTON_RELEASED_ID,
-            button === -1 ? EventBusValue.MICROBIT_EVT_ANY : command,
+                command,
             () => {
                 handler();
             }
@@ -262,6 +275,8 @@ namespace pfReceiver {
 
 let counter = 0;
 pfReceiver.connectIrReceiver(DigitalPin.P2)
+
+// --- onIrCommand ---
 
 // pfReceiver.onIrCommand(0, 110, 100, IrButtonAction.Pressed, () => {
 //     counter += 1;
@@ -278,6 +293,8 @@ pfReceiver.connectIrReceiver(DigitalPin.P2)
 //     basic.showNumber(counter)
 // })
 
+// --- onSpeedRCcommand ---
+
 pfReceiver.onSpeedRCcommand(0, SpeedRCbutton.Red_Increment, IrButtonAction.Pressed, () => {
     counter += 1;
     basic.showNumber(counter)
@@ -293,7 +310,6 @@ pfReceiver.onSpeedRCcommand(0, SpeedRCbutton.Red_Brake, IrButtonAction.Pressed, 
     basic.showNumber(counter)
 })
 
-
 pfReceiver.onSpeedRCcommand(0, SpeedRCbutton.Blue_Increment, IrButtonAction.Pressed, () => {
     counter += 2;
     basic.showNumber(counter)
@@ -305,37 +321,51 @@ pfReceiver.onSpeedRCcommand(0, SpeedRCbutton.Blue_Decrement, IrButtonAction.Pres
 })
 
 pfReceiver.onSpeedRCcommand(0, SpeedRCbutton.Blue_Brake, IrButtonAction.Pressed, () => {
-    counter = 2;
+    counter = 0;
     basic.showNumber(counter)
 })
 
-// ---
+// --- onRCcommand ---
 
-pfReceiver.onRCcommand(0, RCbutton.Red_Forward, IrButtonAction.Pressed, () => {
+pfReceiver.onRCcommand(0, RCbutton.Forward, RCbutton.Float, IrButtonAction.Pressed, () => {
     counter += 1;
     basic.showNumber(counter)
 })
 
-pfReceiver.onRCcommand(0, RCbutton.Red_Forward, IrButtonAction.Released, () => {
-    basic.showIcon(IconNames.Heart)
-})
-
-pfReceiver.onRCcommand(0, RCbutton.Red_Backward, IrButtonAction.Pressed, () => {
+pfReceiver.onRCcommand(0, RCbutton.Backward, RCbutton.Float, IrButtonAction.Pressed, () => {
     counter -= 1;
     basic.showNumber(counter)
 })
 
 
-pfReceiver.onRCcommand(0, RCbutton.Blue_Forward, IrButtonAction.Pressed, () => {
+pfReceiver.onRCcommand(0, RCbutton.Float, RCbutton.Forward, IrButtonAction.Pressed, () => {
     counter += 2;
+})
+
+pfReceiver.onRCcommand(0, RCbutton.Float, RCbutton.Forward, IrButtonAction.Released, () => {
     basic.showNumber(counter)
 })
 
-pfReceiver.onRCcommand(0, RCbutton.Blue_Forward, IrButtonAction.Released, () => {
-    basic.showIcon(IconNames.Duck)
-})
-
-pfReceiver.onRCcommand(0, RCbutton.Blue_Backward, IrButtonAction.Pressed, () => {
+pfReceiver.onRCcommand(0, RCbutton.Float, RCbutton.Backward, IrButtonAction.Pressed, () => {
     counter -= 2;
+})
+
+pfReceiver.onRCcommand(0, RCbutton.Float, RCbutton.Backward, IrButtonAction.Released, () => {
     basic.showNumber(counter)
+})
+
+pfReceiver.onRCcommand(0, RCbutton.Forward, RCbutton.Backward, IrButtonAction.Pressed, () => {
+    basic.showIcon(IconNames.Diamond)
+})
+
+pfReceiver.onRCcommand(0, RCbutton.Backward, RCbutton.Forward, IrButtonAction.Pressed, () => {
+    basic.showIcon(IconNames.SmallDiamond)
+})
+
+pfReceiver.onRCcommand(0, RCbutton.Forward, RCbutton.Forward, IrButtonAction.Pressed, () => {
+    basic.showArrow(0)
+})
+
+pfReceiver.onRCcommand(0, RCbutton.Backward, RCbutton.Backward, IrButtonAction.Pressed, () => {
+    basic.showArrow(4)
 })
