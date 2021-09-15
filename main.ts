@@ -1,6 +1,4 @@
 const enum RCbutton {
-    //% block="Any"
-    Any = -1,
     //% block="Float"
     Float = 0,
     //% block="Forward"
@@ -148,23 +146,6 @@ namespace pfReceiver {
         }
     }
 
-    function showBits(bits: number[]) {
-        basic.clearScreen();
-        let x: number = 0;
-        let y: number = 0;
-        for (let i = 0; i < 16; i++) {
-            if (bits[i]) {
-                led.plot(x, y);
-            }
-
-            x += 1
-            if (x > 3) {
-                x = 0
-                y += 1
-            }
-        }
-    }
-
     function enableIrMarkSpaceDetection(pin: DigitalPin) {
         pins.setPull(pin, PinPullMode.PullNone);
 
@@ -192,7 +173,7 @@ namespace pfReceiver {
     //% pin.fieldEditor="gridpicker"
     //% pin.fieldOptions.columns=4
     //% pin.fieldOptions.tooltips="false"
-    //% weight=90
+    //% weight=100
     export function connectIrReceiver(
         pin: DigitalPin
     ): void {
@@ -201,24 +182,25 @@ namespace pfReceiver {
     }
 
     /**
-     * Do something when a specific button is pressed or released on the remote control.
-     * @param channel the channel switch 0-3
+     * Do something when a specific command is sent.
+     * @param channel the channel switch 1-4
      * @param mode the mode (binary)
      * @param data the data (binary) or -1 (triggers all events)
      * @param action the trigger action
      * @param handler body code to run when the event is raised
      */
-    //% blockId=pfReceiver_infrared_on_ir_command
-    //% block="on IR command, channel %channel, mode %mode, data %data | %action"
+    //% blockId=pfReceiver_on_command
+    //% block="on IR command: channel %channel | mode %mode | data %data | %action"
+    //% channel.min=1 channel.max=4 channel.defl=1
     //% weight=50
-    export function onIrCommand(
+    export function onCommand(
         channel: number,
         mode: number,
         data: number,
         action: IrButtonAction,
         handler: () => void
     ) {
-        let command = getCommand(channel, bin_to_dec(mode), bin_to_dec(data));
+        let command = getCommand((channel - 1), bin_to_dec(mode), bin_to_dec(data));
 
         control.onEvent(
             action === IrButtonAction.Pressed
@@ -231,13 +213,24 @@ namespace pfReceiver {
         );
     }
 
+    /**
+     * Do something when a specific button is pressed or released on the PF speed remote control.
+     * @param channel the channel switch 1-4
+     * @param button the button
+     * @param action the trigger action
+     * @param handler body code to run when the event is raised
+     */
+    //% blockId=pfReceiver_infrared_on_speed_rc_command
+    //% block="on Speed RC command: channel %channel | button %button | %action"
+    //% channel.min=1 channel.max=4 channel.defl=1
+    //% weight=90
     export function onSpeedRCcommand(
         channel: number,
         button: SpeedRCbutton,
         action: IrButtonAction,
         handler: () => void
     ) {
-        let command = (channel << 7) + bin_to_dec(button);
+        let command = ((channel - 1) << 7) + bin_to_dec(button);
 
         control.onEvent(
             action === IrButtonAction.Pressed
@@ -250,6 +243,18 @@ namespace pfReceiver {
         );
     }
 
+    /**
+     * Do something when a specific button is pressed or released on the PF remote control.
+     * @param channel the channel switch 1-4
+     * @param red the red output button
+     * @param blue the blue output button
+     * @param action the trigger action
+     * @param handler body code to run when the event is raised
+     */
+    //% blockId=pfReceiver_infrared_on_rc_command
+    //% block="on RC command: channel %channel | red %red | blue %blue | %action"
+    //% channel.min=1 channel.max=4 channel.defl=1
+    //% weight=95
     export function onRCcommand(
         channel: number,
         red: RCbutton,
@@ -257,7 +262,7 @@ namespace pfReceiver {
         action: IrButtonAction,
         handler: () => void
     ) {
-        let command = (((channel << 3) + 1 << 2) + bin_to_dec(blue) << 2) + bin_to_dec(red);
+        let command = ((((channel - 1) << 3) + 1 << 2) + bin_to_dec(blue) << 2) + bin_to_dec(red);
 
         control.onEvent(
             action === IrButtonAction.Pressed
@@ -270,102 +275,3 @@ namespace pfReceiver {
         );
     }
 }
-
-// Test
-
-let counter = 0;
-pfReceiver.connectIrReceiver(DigitalPin.P2)
-
-// --- onIrCommand ---
-
-// pfReceiver.onIrCommand(0, 110, 100, IrButtonAction.Pressed, () => {
-//     counter += 1;
-//     basic.showNumber(counter)
-// })
-
-// pfReceiver.onIrCommand(0, 110, 101, IrButtonAction.Pressed, () => {
-//     counter -= 1;
-//     basic.showNumber(counter)
-// })
-
-// pfReceiver.onIrCommand(0, 100, 1000, IrButtonAction.Pressed, () => {
-//     counter = 0;
-//     basic.showNumber(counter)
-// })
-
-// --- onSpeedRCcommand ---
-
-pfReceiver.onSpeedRCcommand(0, SpeedRCbutton.Red_Increment, IrButtonAction.Pressed, () => {
-    counter += 1;
-    basic.showNumber(counter)
-})
-
-pfReceiver.onSpeedRCcommand(0, SpeedRCbutton.Red_Decrement, IrButtonAction.Pressed, () => {
-    counter -= 1;
-    basic.showNumber(counter)
-})
-
-pfReceiver.onSpeedRCcommand(0, SpeedRCbutton.Red_Brake, IrButtonAction.Pressed, () => {
-    counter = 0;
-    basic.showNumber(counter)
-})
-
-pfReceiver.onSpeedRCcommand(0, SpeedRCbutton.Blue_Increment, IrButtonAction.Pressed, () => {
-    counter += 2;
-    basic.showNumber(counter)
-})
-
-pfReceiver.onSpeedRCcommand(0, SpeedRCbutton.Blue_Decrement, IrButtonAction.Pressed, () => {
-    counter -= 2;
-    basic.showNumber(counter)
-})
-
-pfReceiver.onSpeedRCcommand(0, SpeedRCbutton.Blue_Brake, IrButtonAction.Pressed, () => {
-    counter = 0;
-    basic.showNumber(counter)
-})
-
-// --- onRCcommand ---
-
-pfReceiver.onRCcommand(0, RCbutton.Forward, RCbutton.Float, IrButtonAction.Pressed, () => {
-    counter += 1;
-    basic.showNumber(counter)
-})
-
-pfReceiver.onRCcommand(0, RCbutton.Backward, RCbutton.Float, IrButtonAction.Pressed, () => {
-    counter -= 1;
-    basic.showNumber(counter)
-})
-
-
-pfReceiver.onRCcommand(0, RCbutton.Float, RCbutton.Forward, IrButtonAction.Pressed, () => {
-    counter += 2;
-})
-
-pfReceiver.onRCcommand(0, RCbutton.Float, RCbutton.Forward, IrButtonAction.Released, () => {
-    basic.showNumber(counter)
-})
-
-pfReceiver.onRCcommand(0, RCbutton.Float, RCbutton.Backward, IrButtonAction.Pressed, () => {
-    counter -= 2;
-})
-
-pfReceiver.onRCcommand(0, RCbutton.Float, RCbutton.Backward, IrButtonAction.Released, () => {
-    basic.showNumber(counter)
-})
-
-pfReceiver.onRCcommand(0, RCbutton.Forward, RCbutton.Backward, IrButtonAction.Pressed, () => {
-    basic.showIcon(IconNames.Diamond)
-})
-
-pfReceiver.onRCcommand(0, RCbutton.Backward, RCbutton.Forward, IrButtonAction.Pressed, () => {
-    basic.showIcon(IconNames.SmallDiamond)
-})
-
-pfReceiver.onRCcommand(0, RCbutton.Forward, RCbutton.Forward, IrButtonAction.Pressed, () => {
-    basic.showArrow(0)
-})
-
-pfReceiver.onRCcommand(0, RCbutton.Backward, RCbutton.Backward, IrButtonAction.Pressed, () => {
-    basic.showArrow(4)
-})
