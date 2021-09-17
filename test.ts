@@ -3,17 +3,17 @@ pfReceiver.connectIrReceiver(DigitalPin.P2)
 
 // --- onIrCommand ---
 
-// pfReceiver.onCommand(1, 110, 100, IrButtonAction.Pressed, () => {
+// pfReceiver.onCommand(1, 0b110, 0b100, IrButtonAction.Pressed, () => {
 //     counter += 1;
 //     basic.showNumber(counter)
 // })
 
-// pfReceiver.onCommand(1, 110, 101, IrButtonAction.Pressed, () => {
+// pfReceiver.onCommand(1, 0b110, 0b101, IrButtonAction.Pressed, () => {
 //     counter -= 1;
 //     basic.showNumber(counter)
 // })
 
-// pfReceiver.onCommand(1, 100, 1000, IrButtonAction.Pressed, () => {
+// pfReceiver.onCommand(1, 0b100, 0b1000, IrButtonAction.Pressed, () => {
 //     counter = 0;
 //     basic.showNumber(counter)
 // })

@@ -1,30 +1,30 @@
 const enum RCbutton {
     //% block="Float"
-    Float = 0,
+    Float = 0b0,
     //% block="Forward"
-    Forward = 1,
+    Forward = 0b1,
     //% block="Backward"
-    Backward = 10,
+    Backward = 0b10,
     //% block="Break"
-    Break = 11,
+    Break = 0b11,
 }
 
 const enum SpeedRCbutton {
     //% block="Any"
     Any = -1,
     //% block="Red Increment"
-    Red_Increment = 1100100,
+    Red_Increment = 0b1100100,
     //% block="Red Decrement"
-    Red_Decrement = 1100101,
+    Red_Decrement = 0b1100101,
     //% block="Red Break"
-    Red_Brake = 1001000,
+    Red_Brake = 0b1001000,
 
     //% block="Blue Increment"
-    Blue_Increment = 1110100,
+    Blue_Increment = 0b1110100,
     //% block="Blue Decrement"
-    Blue_Decrement = 1110101,
+    Blue_Decrement = 0b1110101,
     //% block="Blue Break"
-    Blue_Brake = 1011000,
+    Blue_Brake = 0b1011000,
 }
 
 const enum IrButtonAction {
@@ -54,10 +54,6 @@ namespace pfReceiver {
     let activeCommand: number = null;
     let lastToggle: uint8 = null;
     let bits: number[] = [];
-
-    function bin_to_dec(bstr: number) {
-        return parseInt((bstr + ''), 2);
-    }
 
     function resetState() {
         bitsReceived = 0;
@@ -101,7 +97,7 @@ namespace pfReceiver {
     }
 
     function getCommand(channel: number, mode: number, data: number) {
-        let out = ((channel << 3) + mode << 4) + data;
+        let out = (channel << 7) | (mode << 4) | data;
         return out;
     }
 
@@ -184,8 +180,8 @@ namespace pfReceiver {
     /**
      * Do something when a specific command is sent.
      * @param channel the channel switch 1-4
-     * @param mode the mode (binary)
-     * @param data the data (binary) or -1 (triggers all events)
+     * @param mode the mode (binary eg. 0b100)
+     * @param data the data (binary eg. 0b0101) or -1 (triggers all events)
      * @param action the trigger action
      * @param handler body code to run when the event is raised
      */
@@ -200,7 +196,7 @@ namespace pfReceiver {
         action: IrButtonAction,
         handler: () => void
     ) {
-        let command = getCommand((channel - 1), bin_to_dec(mode), bin_to_dec(data));
+        let command = getCommand((channel - 1), mode, data);
 
         control.onEvent(
             action === IrButtonAction.Pressed
@@ -230,7 +226,7 @@ namespace pfReceiver {
         action: IrButtonAction,
         handler: () => void
     ) {
-        let command = ((channel - 1) << 7) + bin_to_dec(button);
+        let command = ((channel - 1) << 7) | button;
 
         control.onEvent(
             action === IrButtonAction.Pressed
@@ -262,7 +258,7 @@ namespace pfReceiver {
         action: IrButtonAction,
         handler: () => void
     ) {
-        let command = ((((channel - 1) << 3) + 1 << 2) + bin_to_dec(blue) << 2) + bin_to_dec(red);
+        let command = ((channel - 1) << 7) | (1 << 4) | (blue << 2) | red;
 
         control.onEvent(
             action === IrButtonAction.Pressed
