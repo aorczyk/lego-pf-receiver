@@ -106,14 +106,14 @@ namespace pfReceiver {
     }
 
     function getCommand(channel: number, mode: number, data: number) {
-        let out = ((channel >>> 2) << 7) | (mode << 4) | data;
+        let out = (channel << 8) | (mode << 4) | data;
         return out;
     }
 
     function process() {
         if (bitsReceived === 16 && (15 ^ nibble1 ^ nibble2 ^ data) === lrc) {
             newCommand = getCommand(channel, mode, data);
-            
+
             if (debug){
                 serial.writeNumbers(bits)
                 serial.writeNumbers([channel, mode, data, newCommand])
@@ -122,13 +122,13 @@ namespace pfReceiver {
             if (lastToggle != toggle || (mode == 1 && activeCommand != newCommand)) {
                 if (activeCommand >= 0) {
                     control.raiseEvent(
-                        PF_RECEIVER_IR_BUTTON_RELEASED_ID,
+                        PF_RECEIVER_IR_BUTTON_RELEASED_ID + channel,
                         activeCommand
                     );
                 }
 
                 control.raiseEvent(
-                    PF_RECEIVER_IR_BUTTON_PRESSED_ID,
+                    PF_RECEIVER_IR_BUTTON_PRESSED_ID + channel,
                     newCommand
                 );
 
@@ -209,8 +209,8 @@ namespace pfReceiver {
 
         control.onEvent(
             action === IrButtonAction.Pressed
-                ? PF_RECEIVER_IR_BUTTON_PRESSED_ID
-                : PF_RECEIVER_IR_BUTTON_RELEASED_ID,
+                ? PF_RECEIVER_IR_BUTTON_PRESSED_ID + channel
+                : PF_RECEIVER_IR_BUTTON_RELEASED_ID + channel,
             data === -1 ? EventBusValue.MICROBIT_EVT_ANY : command,
             () => {
                 handler(control.eventValue());
@@ -234,12 +234,12 @@ namespace pfReceiver {
         action: IrButtonAction,
         handler: () => void
     ) {
-        let command = ((channel >>> 2) << 7) | button;
+        let command = (channel << 8) | button;
 
         control.onEvent(
             action === IrButtonAction.Pressed
-                ? PF_RECEIVER_IR_BUTTON_PRESSED_ID
-                : PF_RECEIVER_IR_BUTTON_RELEASED_ID,
+                ? PF_RECEIVER_IR_BUTTON_PRESSED_ID + channel
+                : PF_RECEIVER_IR_BUTTON_RELEASED_ID + channel,
             button === -1 ? EventBusValue.MICROBIT_EVT_ANY : command,
             () => {
                 handler();
@@ -265,18 +265,21 @@ namespace pfReceiver {
         action: IrButtonAction,
         handler: () => void
     ) {
-        let command = ((channel >>> 2) << 7) | (1 << 4) | (blue << 2) | red;
+        let command = (channel << 8) | (1 << 4) | (blue << 2) | red;
 
         control.onEvent(
             action === IrButtonAction.Pressed
-                ? PF_RECEIVER_IR_BUTTON_PRESSED_ID
-                : PF_RECEIVER_IR_BUTTON_RELEASED_ID,
+                ? PF_RECEIVER_IR_BUTTON_PRESSED_ID + channel
+                : PF_RECEIVER_IR_BUTTON_RELEASED_ID + channel,
                 command,
             () => {
                 handler();
             }
         );
     }
+
+    let isRecording: boolean = true;
+    let recordedCommands: number[][];
 
     /**
      * Saves commands from the PF remote controls at given array.
@@ -285,23 +288,36 @@ namespace pfReceiver {
     //% blockId=pfReceiver_record
     //% block="save RC commands at %data"
     //% weight=60
-    export function record(
-        data: number[][],
-        isRecording: boolean = true
-    ) {
+    export function startRecord(data: number[][]) {
+        serial.writeString('Recording...\n')
+        isRecording = true;
+
+        recordedCommands = data;
+
         control.onEvent(
-            IrButtonAction.Pressed,
+            PF_RECEIVER_IR_BUTTON_PRESSED_ID,
             EventBusValue.MICROBIT_EVT_ANY,
             () => {
                 if (isRecording){
+                    let eventValue = control.eventValue();
+                    // console.log('eventSource')
+                    // console.log(control.eventSourceId(EventBusSource.MICROBIT_ID_BUTTON_A))
+                    // console.log('eventValue')
+                    // console.log(eventValue)
+                    
                     let now = input.runningTime();
-                    if (data.length > 0) {
-                        let n = data.length - 1
-                        data[n][2] = now - data[n][1];
+                    if (recordedCommands.length > 0) {
+                        let n = recordedCommands.length - 1
+                        recordedCommands[n][2] = now - recordedCommands[n][1];
+                        // console.log(recordedCommands[n][2])
                     }
-                    data.push([control.eventValue(), now, 0])
+                    recordedCommands.push([eventValue, now, 0])
                 }
             }
         );
+    }
+
+    export function stopRecord(){
+        isRecording = false;
     }
 }
