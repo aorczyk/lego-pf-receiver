@@ -1,4 +1,4 @@
-const enum Channel {
+const enum IrChannel {
     //% block="1"
     Channel1 = 0,
     //% block="2"
@@ -229,7 +229,7 @@ namespace pfReceiver {
     //% block="on Speed RC command: channel %channel | button %button | %action"
     //% weight=90
     export function onSpeedRCcommand(
-        channel: Channel,
+        channel: IrChannel,
         button: SpeedRCbutton,
         action: IrButtonAction,
         handler: () => void
@@ -259,7 +259,7 @@ namespace pfReceiver {
     //% block="on RC command: channel %channel | red %red | blue %blue | %action"
     //% weight=95
     export function onRCcommand(
-        channel: Channel,
+        channel: IrChannel,
         red: RCbutton,
         blue: RCbutton,
         action: IrButtonAction,
