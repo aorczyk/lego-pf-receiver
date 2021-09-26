@@ -43,7 +43,7 @@ const enum IrButtonAction {
     Released = 1,
 }
 
-//% color=#f68420 icon="\uf09e" block="PF IR Receiver"
+//% color=#f68420 icon="\uf09e" block="PF Receiver"
 namespace pfReceiver {
     const PF_RECEIVER_IR_BUTTON_PRESSED_ID = 789;
     const PF_RECEIVER_IR_BUTTON_RELEASED_ID = 790;
@@ -289,35 +289,35 @@ namespace pfReceiver {
     //% block="save RC commands at %data"
     //% weight=60
     export function startRecord(data: number[][]) {
+        led.plot(0, 0)
         serial.writeString('Recording...\n')
         isRecording = true;
 
-        recordedCommands = data;
+        if (!recordedCommands){
+            control.onEvent(
+                PF_RECEIVER_IR_BUTTON_PRESSED_ID,
+                EventBusValue.MICROBIT_EVT_ANY,
+                () => {
+                    if (isRecording){
+                        let eventValue = control.eventValue();
+                        let now = input.runningTime();
+                        if (recordedCommands.length > 0) {
+                            let n = recordedCommands.length - 1
+                            recordedCommands[n][2] = now - recordedCommands[n][1];
+                        }
 
-        control.onEvent(
-            PF_RECEIVER_IR_BUTTON_PRESSED_ID,
-            EventBusValue.MICROBIT_EVT_ANY,
-            () => {
-                if (isRecording){
-                    let eventValue = control.eventValue();
-                    // console.log('eventSource')
-                    // console.log(control.eventSourceId(EventBusSource.MICROBIT_ID_BUTTON_A))
-                    // console.log('eventValue')
-                    // console.log(eventValue)
-                    
-                    let now = input.runningTime();
-                    if (recordedCommands.length > 0) {
-                        let n = recordedCommands.length - 1
-                        recordedCommands[n][2] = now - recordedCommands[n][1];
-                        // console.log(recordedCommands[n][2])
+                        serial.writeNumbers([111, eventValue, now])
+                        recordedCommands.push([eventValue, now, 0])
                     }
-                    recordedCommands.push([eventValue, now, 0])
                 }
-            }
-        );
+            );
+        }
+
+        recordedCommands = data;
     }
 
     export function stopRecord(){
         isRecording = false;
+        led.unplot(0, 0)
     }
 }
