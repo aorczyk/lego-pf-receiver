@@ -20,12 +20,12 @@ pfReceiver.debug = true;
 
 // --- onSpeedRCcommand ---
 
-pfReceiver.onSpeedRCcommand(IrChannel.Channel1, SpeedRCbutton.RedIncrement, IrButtonAction.Pressed, () => {
+pfReceiver.onSpeedRCcommand(IrChannel.Channel2, SpeedRCbutton.RedIncrement, IrButtonAction.Pressed, () => {
     counter += 1;
     basic.showNumber(counter)
 })
 
-pfReceiver.onSpeedRCcommand(IrChannel.Channel1, SpeedRCbutton.RedDecrement, IrButtonAction.Pressed, () => {
+pfReceiver.onSpeedRCcommand(IrChannel.Channel2, SpeedRCbutton.RedDecrement, IrButtonAction.Pressed, () => {
     counter -= 1;
     basic.showNumber(counter)
 })

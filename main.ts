@@ -45,7 +45,7 @@ const enum IrButtonAction {
 
 //% color=#f68420 icon="\uf09e" block="PF Receiver"
 namespace pfReceiver {
-    const PF_RECEIVER_IR_BUTTON_PRESSED_ID = 789;
+    const PF_RECEIVER_IR_BUTTON_PRESSED_ID = 780;
     const PF_RECEIVER_IR_BUTTON_RELEASED_ID = 790;
 
     export let debug: boolean = false;
@@ -106,8 +106,7 @@ namespace pfReceiver {
     }
 
     function getCommand(channel: number, mode: number, data: number) {
-        let out = (channel << 8) | (mode << 4) | data;
-        return out;
+        return (channel << 8) | (mode << 4) | data;
     }
 
     function process() {
@@ -129,6 +128,12 @@ namespace pfReceiver {
 
                 control.raiseEvent(
                     PF_RECEIVER_IR_BUTTON_PRESSED_ID + channel,
+                    newCommand
+                );
+
+                // For recorder
+                control.raiseEvent(
+                    PF_RECEIVER_IR_BUTTON_PRESSED_ID + 100,
                     newCommand
                 );
 
@@ -279,45 +284,42 @@ namespace pfReceiver {
     }
 
     let isRecording: boolean = true;
-    let recordedCommands: number[][];
 
     /**
-     * Saves commands from the PF remote controls at given array.
+     * Start saving commands from the PF remote controls at given array.
      * @param data the array where commands are saved
      */
     //% blockId=pfReceiver_record
     //% block="save RC commands at %data"
     //% weight=60
-    export function startRecord(data: number[][]) {
-        led.plot(0, 0)
-        serial.writeString('Recording...\n')
+    export function startRecord(recordedCommands: number[][]) {
         isRecording = true;
 
-        if (!recordedCommands){
-            control.onEvent(
-                PF_RECEIVER_IR_BUTTON_PRESSED_ID,
-                EventBusValue.MICROBIT_EVT_ANY,
-                () => {
-                    if (isRecording){
-                        let eventValue = control.eventValue();
-                        let now = input.runningTime();
-                        if (recordedCommands.length > 0) {
-                            let n = recordedCommands.length - 1
-                            recordedCommands[n][2] = now - recordedCommands[n][1];
-                        }
-
-                        serial.writeNumbers([111, eventValue, now])
-                        recordedCommands.push([eventValue, now, 0])
+        control.onEvent(
+            PF_RECEIVER_IR_BUTTON_PRESSED_ID + 100,
+            EventBusValue.MICROBIT_EVT_ANY,
+            () => {
+                if (isRecording){
+                    let eventValue = control.eventValue();
+                    let now = input.runningTime();
+                    if (recordedCommands.length > 0) {
+                        let n = recordedCommands.length - 1
+                        recordedCommands[n][2] = now - recordedCommands[n][1];
                     }
-                }
-            );
-        }
 
-        recordedCommands = data;
+                    recordedCommands.push([eventValue, now, 0])
+                }
+            }
+        );
     }
 
+    /**
+     * Stop saving commands.
+     */
+    //% blockId=pfReceiver_stop_record
+    //% block="stop saving RC commands"
+    //% weight=55
     export function stopRecord(){
         isRecording = false;
-        led.unplot(0, 0)
     }
 }
