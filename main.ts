@@ -59,10 +59,11 @@ namespace pfReceiver {
     let address: uint8 = null;
     let mode: uint8 = null;
     let data: uint8 = null;
+    let datagram: number = null;
     let newCommand: number = null;
     let activeCommand: number = null;
     let lastToggle: uint8 = null;
-    let bits: number[] = [];
+    let bits: string = ''
 
     function resetState() {
         bitsReceived = 0;
@@ -75,12 +76,15 @@ namespace pfReceiver {
         address = null;
         mode = null;
         data = null;
-        bits = [];
+        datagram = null;
+        bits = '';
     }
 
     function appendBitToDatagram(bit: number): void {
         bitsReceived += 1;
-        bits.push(bit);
+        bits += (bitsReceived < 16 && bitsReceived % 4 == 0) ? bit + '-' : bit;
+
+        datagram = (datagram << 1) + bit;
 
         if (bitsReceived <= 4) {
             nibble1 = (nibble1 << 1) + bit;
@@ -114,7 +118,7 @@ namespace pfReceiver {
             newCommand = getCommand(channel, mode, data);
 
             if (debug){
-                serial.writeNumbers(bits)
+                serial.writeString(bits)
                 serial.writeNumbers([channel, mode, data, newCommand])
             }
 
@@ -302,6 +306,7 @@ namespace pfReceiver {
                 if (isRecording){
                     let eventValue = control.eventValue();
                     let now = input.runningTime();
+                    // let now = input.runningTimeMicros();
                     if (recordedCommands.length > 0) {
                         let n = recordedCommands.length - 1
                         recordedCommands[n][2] = now - recordedCommands[n][1];

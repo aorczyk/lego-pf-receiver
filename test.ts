@@ -20,18 +20,22 @@ pfReceiver.debug = true;
 
 // --- onSpeedRCcommand ---
 
-pfReceiver.onSpeedRCcommand(IrChannel.Channel2, SpeedRCbutton.RedIncrement, IrButtonAction.Pressed, () => {
+pfReceiver.onSpeedRCcommand(IrChannel.Channel1, SpeedRCbutton.RedIncrement, IrButtonAction.Pressed, () => {
     counter += 1;
     basic.showNumber(counter)
 })
 
-pfReceiver.onSpeedRCcommand(IrChannel.Channel2, SpeedRCbutton.RedDecrement, IrButtonAction.Pressed, () => {
+pfReceiver.onSpeedRCcommand(IrChannel.Channel1, SpeedRCbutton.RedDecrement, IrButtonAction.Pressed, () => {
     counter -= 1;
     basic.showNumber(counter)
 })
 
 pfReceiver.onSpeedRCcommand(IrChannel.Channel2, SpeedRCbutton.RedDecrement, IrButtonAction.Pressed, () => {
     basic.showIcon(IconNames.Happy)
+})
+
+pfReceiver.onSpeedRCcommand(IrChannel.Channel2, SpeedRCbutton.RedDecrement, IrButtonAction.Pressed, () => {
+    basic.showIcon(IconNames.Heart)
 })
 
 pfReceiver.onSpeedRCcommand(IrChannel.Channel1, SpeedRCbutton.RedBrake, IrButtonAction.Pressed, () => {
@@ -64,6 +68,23 @@ pfReceiver.onRCcommand(IrChannel.Channel1, RCbutton.Forward, RCbutton.Float, IrB
 pfReceiver.onRCcommand(IrChannel.Channel1, RCbutton.Backward, RCbutton.Float, IrButtonAction.Pressed, () => {
     counter -= 1;
     basic.showNumber(counter)
+})
+
+
+pfReceiver.onRCcommand(IrChannel.Channel2, RCbutton.Forward, RCbutton.Float, IrButtonAction.Pressed, () => {
+    basic.showIcon(IconNames.SmallHeart)
+})
+
+pfReceiver.onRCcommand(IrChannel.Channel2, RCbutton.Forward, RCbutton.Float, IrButtonAction.Released, () => {
+    basic.clearScreen()
+})
+
+pfReceiver.onRCcommand(IrChannel.Channel2, RCbutton.Backward, RCbutton.Float, IrButtonAction.Pressed, () => {
+    basic.showIcon(IconNames.Heart)
+})
+
+pfReceiver.onRCcommand(IrChannel.Channel2, RCbutton.Backward, RCbutton.Float, IrButtonAction.Released, () => {
+    basic.clearScreen()
 })
 
 
