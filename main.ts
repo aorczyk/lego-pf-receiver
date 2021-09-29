@@ -48,7 +48,7 @@ namespace pfReceiver {
     const PF_RECEIVER_IR_BUTTON_PRESSED_ID = 780;
     const PF_RECEIVER_IR_BUTTON_RELEASED_ID = 790;
 
-    export let debug: boolean = false;
+    let debug: boolean = null;
     let bitsReceived = 0;
     let nibble1: uint8 = null;
     let nibble2: uint8 = null;
@@ -64,6 +64,7 @@ namespace pfReceiver {
     let activeCommand: number = null;
     let lastToggle: uint8 = null;
     let bits: string = ''
+    let isRecording: boolean = true;
 
     function resetState() {
         bitsReceived = 0;
@@ -116,10 +117,10 @@ namespace pfReceiver {
     function process() {
         if (bitsReceived === 16 && (15 ^ nibble1 ^ nibble2 ^ data) === lrc) {
             newCommand = getCommand(channel, mode, data);
-
+serial.writeLine(JSON.stringify(debug))
             if (debug){
                 serial.writeString(bits)
-                serial.writeNumbers([channel, mode, data, newCommand])
+                serial.writeNumbers([toggle, channel, mode, data, newCommand])
             }
 
             if (lastToggle != toggle || (mode == 1 && activeCommand != newCommand)) {
@@ -189,10 +190,14 @@ namespace pfReceiver {
     //% pin.fieldOptions.tooltips="false"
     //% weight=100
     export function connectIrReceiver(
-        pin: DigitalPin
+        pin: DigitalPin,
+        debugging: boolean = false
     ): void {
         enableIrMarkSpaceDetection(pin);
         resetState();
+        debug = true;
+
+        serial.writeLine(JSON.stringify(debug))
     }
 
     /**
@@ -286,8 +291,6 @@ namespace pfReceiver {
             }
         );
     }
-
-    let isRecording: boolean = true;
 
     /**
      * Start saving commands from the PF remote controls at given array.

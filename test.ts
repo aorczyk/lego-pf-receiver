@@ -1,6 +1,8 @@
 let counter = 0;
-pfReceiver.connectIrReceiver(DigitalPin.P2)
-pfReceiver.debug = true;
+let data: number[][] = [];
+pfReceiver.connectIrReceiver(DigitalPin.P2, true)
+pfReceiver.startRecord(data)
+
 // --- onIrCommand ---
 
 // pfReceiver.onCommand(0, 0b110, 0b100, IrButtonAction.Pressed, () => {
@@ -22,12 +24,12 @@ pfReceiver.debug = true;
 
 pfReceiver.onSpeedRCcommand(IrChannel.Channel1, SpeedRCbutton.RedIncrement, IrButtonAction.Pressed, () => {
     counter += 1;
-    basic.showNumber(counter)
+    // basic.showNumber(counter)
 })
 
 pfReceiver.onSpeedRCcommand(IrChannel.Channel1, SpeedRCbutton.RedDecrement, IrButtonAction.Pressed, () => {
     counter -= 1;
-    basic.showNumber(counter)
+    // basic.showNumber(counter)
 })
 
 pfReceiver.onSpeedRCcommand(IrChannel.Channel2, SpeedRCbutton.RedDecrement, IrButtonAction.Pressed, () => {
@@ -39,8 +41,13 @@ pfReceiver.onSpeedRCcommand(IrChannel.Channel2, SpeedRCbutton.RedDecrement, IrBu
 })
 
 pfReceiver.onSpeedRCcommand(IrChannel.Channel1, SpeedRCbutton.RedBrake, IrButtonAction.Pressed, () => {
-    counter = 0;
     basic.showNumber(counter)
+    counter = 0;
+    // basic.showNumber(counter)
+    // pfReceiver.stopRecord()
+    console.log(JSON.stringify(data))
+    data = []
+    pfReceiver.startRecord(data)
 })
 
 pfReceiver.onSpeedRCcommand(IrChannel.Channel1, SpeedRCbutton.BlueIncrement, IrButtonAction.Pressed, () => {
@@ -120,19 +127,8 @@ pfReceiver.onRCcommand(IrChannel.Channel1, RCbutton.Backward, RCbutton.Backward,
     basic.showArrow(4)
 })
 
-// let data: number[][] = [];
-// pfReceiver.startRecord(data)
-// // pfReceiver.startRecord(data)
 
-// console.log(EventBusSource.MICROBIT_ID_BUTTON_A)
 
-// input.onButtonPressed(Button.A, function () {
-//     control.raiseEvent(
-//         789,
-//         123
-//     );
-// })
-
-// input.onButtonPressed(Button.B, function () {
-//     console.log(JSON.stringify(data))
-// })
+input.onButtonPressed(Button.A, function () {
+    console.log(JSON.stringify(data))
+})
