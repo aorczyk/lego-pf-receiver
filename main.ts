@@ -117,7 +117,7 @@ namespace pfReceiver {
     function process() {
         if (bitsReceived === 16 && (15 ^ nibble1 ^ nibble2 ^ data) === lrc) {
             newCommand = getCommand(channel, mode, data);
-serial.writeLine(JSON.stringify(debug))
+
             if (debug){
                 serial.writeString(bits)
                 serial.writeNumbers([toggle, channel, mode, data, newCommand])
@@ -196,8 +196,6 @@ serial.writeLine(JSON.stringify(debug))
         enableIrMarkSpaceDetection(pin);
         resetState();
         debug = true;
-
-        serial.writeLine(JSON.stringify(debug))
     }
 
     /**
