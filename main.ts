@@ -1,4 +1,13 @@
-const enum IrChannel {
+/**
+ * Power Functions Receiver.
+ * Receives commands from LEGO Power Functions remote controls.
+ * 
+ * LEGO Power Functions RC documentation: https://www.philohome.com/pf/LEGO_Power_Functions_RC.pdf
+ *
+ * (c) 2021, Adam Orczyk
+ */
+
+const enum PfReceiverChannel {
     //% block="1"
     Channel1 = 0,
     //% block="2"
@@ -9,7 +18,7 @@ const enum IrChannel {
     Channel4 = 3,
 }
 
-const enum RCbutton {
+const enum PfControl {
     //% block="Float"
     Float = 0b0,
     //% block="Forward"
@@ -20,7 +29,7 @@ const enum RCbutton {
     Break = 0b11,
 }
 
-const enum SpeedRCbutton {
+const enum PfSpeedControl {
     //% block="Red Increment"
     RedIncrement = 0b1100100,
     //% block="Red Decrement"
@@ -36,7 +45,7 @@ const enum SpeedRCbutton {
     BlueBrake = 0b1011000,
 }
 
-const enum IrButtonAction {
+const enum PfAction {
     //% block="Pressed"
     Pressed = 0,
     //% block="Released"
@@ -45,10 +54,11 @@ const enum IrButtonAction {
 
 //% color=#f68420 icon="\uf09e" block="PF Receiver"
 namespace pfReceiver {
-    const PF_RECEIVER_IR_BUTTON_PRESSED_ID = 780;
-    const PF_RECEIVER_IR_BUTTON_RELEASED_ID = 790;
+    const PF_PRESSED_ID = 780;
+    const PF_RELEASED_ID = 790;
+    const PF_RECORDED_ID = 880;
 
-    let debug: boolean = null;
+    let debug = false;
     let bitsReceived = 0;
     let nibble1: uint8 = null;
     let nibble2: uint8 = null;
@@ -126,19 +136,19 @@ namespace pfReceiver {
             if (lastToggle != toggle || (mode == 1 && activeCommand != newCommand)) {
                 if (activeCommand >= 0) {
                     control.raiseEvent(
-                        PF_RECEIVER_IR_BUTTON_RELEASED_ID + channel,
+                        PF_RELEASED_ID + channel,
                         activeCommand
                     );
                 }
 
                 control.raiseEvent(
-                    PF_RECEIVER_IR_BUTTON_PRESSED_ID + channel,
+                    PF_PRESSED_ID + channel,
                     newCommand
                 );
 
                 // For recorder
                 control.raiseEvent(
-                    PF_RECEIVER_IR_BUTTON_PRESSED_ID + 100,
+                    PF_RECORDED_ID,
                     newCommand
                 );
 
@@ -191,11 +201,11 @@ namespace pfReceiver {
     //% weight=100
     export function connectIrReceiver(
         pin: DigitalPin,
-        debugging: boolean = false
+        debugging = false
     ): void {
+        debug = debugging;
         enableIrMarkSpaceDetection(pin);
         resetState();
-        debug = true;
     }
 
     /**
@@ -207,22 +217,22 @@ namespace pfReceiver {
      * @param handler body code to run when the event is raised
      */
     //% blockId=pfReceiver_on_command
-    //% block="on IR command: channel %channel | mode %mode | data %data | %action"
+    //% block="on command : channel %channel | mode %mode | data %data | %action"
     //% channel.min=0 channel.max=3 channel.defl=0
     //% weight=50
     export function onCommand(
         channel: number,
         mode: number,
         data: number,
-        action: IrButtonAction,
+        action: PfAction,
         handler: (eventValue: number) => void
     ) {
         let command = getCommand(channel, mode, data);
 
         control.onEvent(
-            action === IrButtonAction.Pressed
-                ? PF_RECEIVER_IR_BUTTON_PRESSED_ID + channel
-                : PF_RECEIVER_IR_BUTTON_RELEASED_ID + channel,
+            action === PfAction.Pressed
+                ? PF_PRESSED_ID + channel
+                : PF_RELEASED_ID + channel,
             data === -1 ? EventBusValue.MICROBIT_EVT_ANY : command,
             () => {
                 handler(control.eventValue());
@@ -238,20 +248,20 @@ namespace pfReceiver {
      * @param handler body code to run when the event is raised
      */
     //% blockId=pfReceiver_infrared_on_speed_rc_command
-    //% block="on Speed RC command: channel %channel | button %button | %action"
+    //% block="on Speed RC command : channel %channel | button %button | %action"
     //% weight=90
     export function onSpeedRCcommand(
-        channel: IrChannel,
-        button: SpeedRCbutton,
-        action: IrButtonAction,
+        channel: PfReceiverChannel,
+        button: PfSpeedControl,
+        action: PfAction,
         handler: () => void
     ) {
         let command = (channel << 8) | button;
 
         control.onEvent(
-            action === IrButtonAction.Pressed
-                ? PF_RECEIVER_IR_BUTTON_PRESSED_ID + channel
-                : PF_RECEIVER_IR_BUTTON_RELEASED_ID + channel,
+            action === PfAction.Pressed
+                ? PF_PRESSED_ID + channel
+                : PF_RELEASED_ID + channel,
             button === -1 ? EventBusValue.MICROBIT_EVT_ANY : command,
             () => {
                 handler();
@@ -268,21 +278,21 @@ namespace pfReceiver {
      * @param handler body code to run when the event is raised
      */
     //% blockId=pfReceiver_infrared_on_rc_command
-    //% block="on RC command: channel %channel | red %red | blue %blue | %action"
+    //% block="on RC command : channel %channel | red %red | blue %blue | %action"
     //% weight=95
     export function onRCcommand(
-        channel: IrChannel,
-        red: RCbutton,
-        blue: RCbutton,
-        action: IrButtonAction,
+        channel: PfReceiverChannel,
+        red: PfControl,
+        blue: PfControl,
+        action: PfAction,
         handler: () => void
     ) {
         let command = (channel << 8) | (1 << 4) | (blue << 2) | red;
 
         control.onEvent(
-            action === IrButtonAction.Pressed
-                ? PF_RECEIVER_IR_BUTTON_PRESSED_ID + channel
-                : PF_RECEIVER_IR_BUTTON_RELEASED_ID + channel,
+            action === PfAction.Pressed
+                ? PF_PRESSED_ID + channel
+                : PF_RELEASED_ID + channel,
                 command,
             () => {
                 handler();
@@ -295,17 +305,23 @@ namespace pfReceiver {
      * @param data the array where commands are saved
      */
     //% blockId=pfReceiver_record
-    //% block="save RC commands at %data"
+    //% block="save RC commands from channels %channels at %data"
     //% weight=60
-    export function startRecord(recordedCommands: number[][]) {
+    export function startRecord(channels: PfReceiverChannel[], recordedCommands: number[][]) {
         isRecording = true;
 
         control.onEvent(
-            PF_RECEIVER_IR_BUTTON_PRESSED_ID + 100,
+            PF_RECORDED_ID,
             EventBusValue.MICROBIT_EVT_ANY,
             () => {
                 if (isRecording){
-                    let eventValue = control.eventValue();
+                    let command = control.eventValue();
+                    let channel = (0b001100000000 & command) >>> 8;
+
+                    if (channels.length != 4 && !channels.some(x => x == channel)){
+                        return;
+                    }
+
                     let now = input.runningTime();
                     // let now = input.runningTimeMicros();
                     if (recordedCommands.length > 0) {
@@ -313,7 +329,7 @@ namespace pfReceiver {
                         recordedCommands[n][2] = now - recordedCommands[n][1];
                     }
 
-                    recordedCommands.push([eventValue, now, 0])
+                    recordedCommands.push([command, now, 0])
                 }
             }
         );
