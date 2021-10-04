@@ -1,7 +1,5 @@
 let counter = 0;
-let data: number[][] = [];
 pfReceiver.connectIrReceiver(DigitalPin.P2, true)
-pfReceiver.startRecord([0], data)
 
 // --- onIrCommand ---
 
@@ -45,9 +43,8 @@ pfReceiver.onSpeedRCcommand(PfReceiverChannel.Channel1, PfSpeedControl.RedBrake,
     counter = 0;
     // basic.showNumber(counter)
     // pfReceiver.stopRecord()
-    console.log(JSON.stringify(data))
-    data = []
-    pfReceiver.startRecord([0], data)
+    console.log(JSON.stringify(pfReceiver.getRecordedCommands()))
+    pfReceiver.startRecord([0])
 })
 
 pfReceiver.onSpeedRCcommand(PfReceiverChannel.Channel1, PfSpeedControl.BlueIncrement, PfAction.Pressed, () => {
@@ -130,5 +127,12 @@ pfReceiver.onRCcommand(PfReceiverChannel.Channel1, PfControl.Backward, PfControl
 
 
 input.onButtonPressed(Button.A, function () {
-    console.log(JSON.stringify(data))
+    pfReceiver.startRecord([0]);
+    basic.showString("R")
+})
+
+input.onButtonPressed(Button.B, function () {
+    pfReceiver.stopRecord();
+    serial.writeLine(JSON.stringify(pfReceiver.getRecordedCommands()))
+    basic.showString("S")
 })

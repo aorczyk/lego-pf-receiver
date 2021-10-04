@@ -75,6 +75,8 @@ namespace pfReceiver {
     let lastToggle: uint8 = null;
     let bits: string = ''
     let isRecording: boolean = true;
+    let recordedCommands: number[][] = [];
+    let recordedChannels: number[] = [];
 
     function resetState() {
         bitsReceived = 0;
@@ -146,11 +148,9 @@ namespace pfReceiver {
                     newCommand
                 );
 
-                // For recorder
-                control.raiseEvent(
-                    PF_RECORDED_ID,
-                    newCommand
-                );
+                if (isRecording){
+                    recordedCommands.push([newCommand, input.runningTime()])
+                }
 
                 activeCommand = newCommand;
                 lastToggle = toggle;
@@ -307,32 +307,10 @@ namespace pfReceiver {
     //% blockId=pfReceiver_record
     //% block="save RC commands from channels %channels at %data"
     //% weight=60
-    export function startRecord(channels: PfReceiverChannel[], recordedCommands: number[][]) {
+    export function startRecord(channels: PfReceiverChannel[]) {
         isRecording = true;
-
-        control.onEvent(
-            PF_RECORDED_ID,
-            EventBusValue.MICROBIT_EVT_ANY,
-            () => {
-                if (isRecording){
-                    let command = control.eventValue();
-                    let channel = (0b001100000000 & command) >>> 8;
-
-                    if (channels.length != 4 && !channels.some(x => x == channel)){
-                        return;
-                    }
-
-                    let now = input.runningTime();
-                    // let now = input.runningTimeMicros();
-                    if (recordedCommands.length > 0) {
-                        let n = recordedCommands.length - 1
-                        recordedCommands[n][2] = now - recordedCommands[n][1];
-                    }
-
-                    recordedCommands.push([command, now, 0])
-                }
-            }
-        );
+        recordedCommands = [];
+        recordedChannels = channels;
     }
 
     /**
@@ -343,5 +321,30 @@ namespace pfReceiver {
     //% weight=55
     export function stopRecord(){
         isRecording = false;
+    }
+
+    export function getRecordedCommands(){
+        return recordedCommands.filter(row => {
+            let datagram = row[0];
+            let channel = (0b001100000000 & datagram) >>> 8;
+            
+            if (row.length == 2){
+                let mode = (0b000001110000 & datagram) >>> 4;
+                let red = (0b000000000011 & datagram);
+                let blue = (0b000000001100 & datagram) >>> 2;
+                let command = (0b000001111111 & datagram);
+                row.push(channel)
+                row.push(mode)
+                row.push(red)
+                row.push(blue)
+                row.push(command)
+            }
+
+            if (recordedChannels.some(x => {return x == channel})){
+                return true;
+            }
+
+            return false;
+        })
     }
 }
