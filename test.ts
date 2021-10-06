@@ -1,5 +1,7 @@
 let counter = 0;
-pfReceiver.connectIrReceiver(DigitalPin.P2, true)
+
+// Test processCommands
+// serial.writeLine(JSON.stringify(pfReceiver.processCommands([[101,6570],[101,6704],[101,6812]], [0])))
 
 // --- onIrCommand ---
 
@@ -136,3 +138,4 @@ input.onButtonPressed(Button.B, function () {
     serial.writeLine(JSON.stringify(pfReceiver.getRecordedCommands()))
     basic.showString("S")
 })
+

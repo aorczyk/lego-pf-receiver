@@ -323,28 +323,34 @@ namespace pfReceiver {
         isRecording = false;
     }
 
-    export function getRecordedCommands(){
-        return recordedCommands.filter(row => {
+    export function processCommands(commands: number[][], channels: number[]){
+        serial.writeLine(JSON.stringify(commands))
+        let lastIndex = commands.length - 1;
+
+        let out: number[][] = [];
+
+        commands.forEach((row, i) => {
             let datagram = row[0];
             let channel = (0b001100000000 & datagram) >>> 8;
-            
-            if (row.length == 2){
-                let mode = (0b000001110000 & datagram) >>> 4;
-                let red = (0b000000000011 & datagram);
-                let blue = (0b000000001100 & datagram) >>> 2;
-                let command = (0b000001111111 & datagram);
-                row.push(channel)
-                row.push(mode)
-                row.push(red)
-                row.push(blue)
-                row.push(command)
+            let mode = (0b000001110000 & datagram) >>> 4;
+            let red = (0b000000000011 & datagram);
+            let blue = (0b000000001100 & datagram) >>> 2;
+            let command = (0b000001111111 & datagram);
+
+            let pauseTime = 0;
+            if (i < lastIndex) {
+                pauseTime = Math.abs(commands[i + 1][1] - row[1])
             }
 
-            if (recordedChannels.some(x => {return x == channel})){
-                return true;
+            if (channels.some(x => { return x == channel })) {
+                out.push([pauseTime, channel, mode, red, blue, command])
             }
-
-            return false;
         })
+
+        return out;
+    }
+
+    export function getRecordedCommands(){
+        return processCommands(recordedCommands, recordedChannels)
     }
 }
