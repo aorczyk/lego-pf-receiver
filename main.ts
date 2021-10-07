@@ -130,7 +130,7 @@ namespace pfReceiver {
         if (bitsReceived === 16 && (15 ^ nibble1 ^ nibble2 ^ data) === lrc) {
             newCommand = getCommand(channel, mode, data);
 
-            if (debug){
+            if (debug) {
                 serial.writeString(bits)
                 serial.writeNumbers([toggle, channel, mode, data, newCommand])
             }
@@ -148,7 +148,7 @@ namespace pfReceiver {
                     newCommand
                 );
 
-                if (isRecording){
+                if (isRecording) {
                     recordedCommands.push([newCommand, input.runningTime()])
                 }
 
@@ -217,7 +217,7 @@ namespace pfReceiver {
      * @param handler body code to run when the event is raised
      */
     //% blockId=pfReceiver_on_command
-    //% block="on command : channel %channel | mode %mode | data %data | %action"
+    //% block="on command : channel %channel | mode %mode | data %data | action %action | handler %handler"
     //% channel.min=0 channel.max=3 channel.defl=0
     //% weight=50
     export function onCommand(
@@ -248,7 +248,7 @@ namespace pfReceiver {
      * @param handler body code to run when the event is raised
      */
     //% blockId=pfReceiver_infrared_on_speed_rc_command
-    //% block="on Speed RC command : channel %channel | button %button | %action"
+    //% block="on Speed RC command : channel %channel | button %button | action %action | handler %handler"
     //% weight=90
     export function onSpeedRCcommand(
         channel: PfReceiverChannel,
@@ -270,7 +270,7 @@ namespace pfReceiver {
     }
 
     /**
-     * Do something when a specific button is pressed or released on the PF remote control.
+     * Do something when a specific state of buttons on the PF remote control is achieved.
      * @param channel the channel switch 0-3
      * @param red the red output button
      * @param blue the blue output button
@@ -278,7 +278,7 @@ namespace pfReceiver {
      * @param handler body code to run when the event is raised
      */
     //% blockId=pfReceiver_infrared_on_rc_command
-    //% block="on RC command : channel %channel | red %red | blue %blue | %action"
+    //% block="on RC command : channel %channel | red %red | blue %blue | action %action | handler %handler"
     //% weight=95
     export function onRCcommand(
         channel: PfReceiverChannel,
@@ -293,7 +293,7 @@ namespace pfReceiver {
             action === PfAction.Pressed
                 ? PF_PRESSED_ID + channel
                 : PF_RELEASED_ID + channel,
-                command,
+            command,
             () => {
                 handler();
             }
@@ -301,11 +301,11 @@ namespace pfReceiver {
     }
 
     /**
-     * Start saving commands from the PF remote controls at given array.
-     * @param data the array where commands are saved
+     * Starts saving commands from the PF remote controls from given channels.
+     * @param channels the array with channels number to record with
      */
     //% blockId=pfReceiver_record
-    //% block="save RC commands from channels %channels at %data"
+    //% block="save RC commands from channels %channels"
     //% weight=60
     export function startRecord(channels: PfReceiverChannel[]) {
         isRecording = true;
@@ -314,22 +314,26 @@ namespace pfReceiver {
     }
 
     /**
-     * Stop saving commands.
+     * Stops saving commands.
      */
     //% blockId=pfReceiver_stop_record
     //% block="stop saving RC commands"
     //% weight=55
-    export function stopRecord(){
+    export function stopRecord() {
         isRecording = false;
     }
 
-    export function processCommands(commands: number[][], channels: number[]){
+    export function processCommands(commands: number[][], channels: number[]) {
         serial.writeLine(JSON.stringify(commands))
-        let lastIndex = commands.length - 1;
 
-        let out: number[][] = [];
+        let out = commands.filter(row => {
+            let channel = (0b001100000000 & row[0]) >>> 8;
+            return channels.some(x => { return x == channel })
+        })
 
-        commands.forEach((row, i) => {
+        let lastIndex = out.length - 1;
+
+        return out.map((row, i) => {
             let datagram = row[0];
             let channel = (0b001100000000 & datagram) >>> 8;
             let mode = (0b000001110000 & datagram) >>> 4;
@@ -339,18 +343,20 @@ namespace pfReceiver {
 
             let pauseTime = 0;
             if (i < lastIndex) {
-                pauseTime = Math.abs(commands[i + 1][1] - row[1])
+                pauseTime = Math.abs(out[i + 1][1] - row[1])
             }
 
-            if (channels.some(x => { return x == channel })) {
-                out.push([pauseTime, channel, mode, red, blue, command])
-            }
+            return [pauseTime, channel, mode, red, blue, command]
         })
-
-        return out;
     }
 
-    export function getRecordedCommands(){
+    /**
+     * Returns recorded commands.
+     */
+    //% blockId=pfReceiver_recorded_commands
+    //% block="recorded commands"
+    //% weight=50
+    export function getRecordedCommands() {
         return processCommands(recordedCommands, recordedChannels)
     }
 }

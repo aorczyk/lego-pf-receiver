@@ -1,8 +1,10 @@
+pfReceiver.connectIrReceiver(DigitalPin.P2)
+
 let counter = 0;
 
 // Test processCommands
-// serial.writeLine(JSON.stringify(pfReceiver.processCommands([[101,6570],[101,6704],[101,6812]], [0])))
-
+// let processedCommands = pfReceiver.processCommands([[101, 6570], [101, 6704], [101, 6812]], [0]);
+// serial.writeLine(JSON.stringify(processedCommands))
 // --- onIrCommand ---
 
 // pfReceiver.onCommand(0, 0b110, 0b100, PfAction.Pressed, () => {

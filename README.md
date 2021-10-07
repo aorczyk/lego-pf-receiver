@@ -1,31 +1,136 @@
+# Power Functions Receiver
 
-> Otwórz tę stronę na [https://aorczyk.github.io/lego-pf-receiver/](https://aorczyk.github.io/lego-pf-receiver/)
+Receives commands from LEGO Power Functions remote controls using IR Receiver Module Iduino ST1089.
 
-## Użyj jako rozszerzenia
+### Features:
+- all PF remote controls are supported
+- the ability to react for all commands from all channels 
+- the ability to record commands from given channels, which could be played by PF Transmitter extension
 
-To repozytorium można dodać jako **rozszerzenie** w MakeCode.
+### :warning: Warning!
+**Lighting the diode and the IR receiver with sunlight :sunny: or from an ordinary light bulb :bulb: may interfere with the signal reception.**
 
-* otwórz [https://makecode.microbit.org/](https://makecode.microbit.org/)
-* kliknij na **Nowy Projekt**
-* kliknij **Rozszerzenia** w menu oznaczonym kołem zębatym
-* szukaj **https://github.com/aorczyk/lego-pf-receiver** i importuj
+## Installation
 
-## Edytuj ten projekt ![Status kompilacji](https://github.com/aorczyk/lego-pf-receiver/workflows/MakeCode/badge.svg)
+1. Open MakeCode and select '+ Extensions' in the 'Advanced' menu. 
+2. Enter the project URL https://github.com/aorczyk/lego-pf-receiver in the search field.
+3. Select the `PF Receiver` extension.
 
-Aby edytować to repozytorium w MakeCode.
+# Documentation
 
-* otwórz [https://makecode.microbit.org/](https://makecode.microbit.org/)
-* kliknij **Importuj**, a następnie **Importuj URL**
-* wklej **https://github.com/aorczyk/lego-pf-receiver** i kliknij importuj
+## pfReceiver.connectIrReceiver
 
-## Podgląd bloków
+Connects to the IR receiver module at the specified digital pin.
 
-Ten obraz przedstawia kod bloków z ostatniego zatwierdzenia we wzorcu.
-Ten obraz może odświeżać się kilka minut.
+```sig
+pfReceiver.connectIrReceiver(DigitalPin.P2)
+```
+### Parameters
 
-![Renderowany widok bloków](https://github.com/aorczyk/lego-pf-receiver/raw/master/.github/makecode/blocks.png)
+- `pin` - the digital pin where ir receiver module is connected
 
-#### Metadane (używane do wyszukiwania, renderowania)
 
-* for PXT/microbit
-<script src="https://makecode.com/gh-pages-embed.js"></script><script>makeCodeRender("{{ site.makecode.home_url }}", "{{ site.github.owner_name }}/{{ site.github.repository_name }}");</script>
+## pfReceiver.onCommand
+
+Do something when a specific command is sent.
+
+```sig
+pfReceiver.onCommand(0, 0b110, 0b100, PfAction.Pressed, () => {
+    basic.showIcon(IconNames.Happy)
+})
+```
+
+### Parameters
+- `mode` - the mode (binary eg. 0b100)
+- `data` - the data (binary eg. 0b0101) or -1 (triggers all events)
+- `action` - the trigger action (Pressed or Released)
+- `handler` - the body code to run when the event is raised
+
+
+## pfReceiver.onSpeedRCcommand
+
+Do something when a specific button is pressed or released on the PF speed remote control.
+
+```sig
+pfReceiver.onSpeedRCcommand(PfReceiverChannel.Channel1, PfSpeedControl.RedIncrement, PfAction.Pressed, () => {
+    counter += 1;
+})
+```
+
+### Parameters
+- `channel` - the channel switch 0-3
+- `button` - the button
+- `action` - the trigger action (Pressed or Released)
+- `handler` - the body code to run when the event is raised
+
+
+## pfReceiver.onRCcommand
+
+Do something when a specific state of buttons on the PF remote control is achieved.
+
+```sig
+pfReceiver.onRCcommand(PfReceiverChannel.Channel1, PfControl.Forward, PfControl.Float, PfAction.Pressed, () => {
+    basic.showIcon(IconNames.SmallHeart)
+})
+```
+
+### Parameters
+- `channel` - the channel switch 0-3
+- `red` - the state of the red output button
+- `blue` - the state of the blue output button
+- `action` - the trigger action (Pressed or Released)
+- `handler` - the body code to run when the event is raised
+
+
+## pfReceiver.startRecord
+
+Starts saving commands from the PF remote controls from given channels.
+
+```sig
+pfReceiver.startRecord([0]);
+```
+
+### Parameters
+- `channels` - the array with channels number to record with
+
+
+## pfReceiver.stopRecord
+
+Stops saving commands.
+
+```sig
+pfReceiver.stopRecord();
+```
+
+## pfReceiver.getRecordedCommands
+
+Returns recorded commands.
+
+```sig
+pfReceiver.getRecordedCommands();
+```
+
+
+## MakeCode Example
+
+```blocks
+pfReceiver.connectIrReceiver(DigitalPin.P2)
+
+pfReceiver.onRCcommand(PfReceiverChannel.Channel1, PfControl.Forward, PfControl.Float, PfAction.Pressed, () => {
+    basic.showIcon(IconNames.Heart)
+})
+
+pfReceiver.onRCcommand(PfReceiverChannel.Channel1, PfControl.Forward, PfControl.Float, PfAction.Released, () => {
+    basic.clearScreen()
+})
+```
+
+## Disclaimer
+
+LEGO® is a trademark of the LEGO Group of companies which does not sponsor, authorize or endorse this project.
+
+## License
+
+Copyright (C) 2021 Adam Orczyk
+
+Licensed under the MIT License (MIT). See LICENSE file for more details.
