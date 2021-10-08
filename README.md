@@ -1,11 +1,11 @@
 # Power Functions Receiver
 
-Receives commands from LEGO Power Functions remote controls using IR Receiver Module Iduino ST1089.
+Receives commands from LEGO Power Functions remote controls using IR Receiver Module Iduino ST1089. Runs given function when speciveied button is pressed or released.
 
 ### Features:
 - all PF remote controls are supported
-- the ability to react for all commands from all channels 
-- the ability to record commands from given channels, which could be played by PF Transmitter extension
+- possibility to run action on RC button pressed or released
+- recording commands from given channels, which could be played by PF Transmitter extension
 
 ### :warning: Warning!
 **Lighting the diode and the IR receiver with sunlight :sunny: or from an ordinary light bulb :bulb: may interfere with the signal reception.**

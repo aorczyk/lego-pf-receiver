@@ -131,7 +131,7 @@ namespace pfReceiver {
             newCommand = getCommand(channel, mode, data);
 
             if (debug) {
-                serial.writeString(bits)
+                serial.writeLine(bits)
                 serial.writeNumbers([toggle, channel, mode, data, newCommand])
             }
 
@@ -324,8 +324,6 @@ namespace pfReceiver {
     }
 
     export function processCommands(commands: number[][], channels: number[]) {
-        serial.writeLine(JSON.stringify(commands))
-
         let out = commands.filter(row => {
             let channel = (0b001100000000 & row[0]) >>> 8;
             return channels.some(x => { return x == channel })
