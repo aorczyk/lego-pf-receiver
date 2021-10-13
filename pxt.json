@@ -9,7 +9,9 @@
     "files": [
         "main.blocks",
         "main.ts",
-        "README.md"
+        "README.md",
+        "_locales/pl/PF Receiver-jsdoc-strings.json",
+        "_locales/pl/PF Receiver-strings.json"
     ],
     "testFiles": [
         "test.ts"
