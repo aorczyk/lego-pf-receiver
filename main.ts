@@ -208,66 +208,6 @@ namespace pfReceiver {
         resetState();
     }
 
-    /**
-     * Do something when a specific command is sent.
-     * @param channel the channel switch 0-3
-     * @param mode the mode (binary eg. 0b100)
-     * @param data the data (binary eg. 0b0101) or -1 (triggers all events)
-     * @param action the trigger action
-     * @param handler body code to run when the event is raised
-     */
-    //% blockId=pfReceiver_on_command
-    //% block="on command : channel %channel | mode %mode | data %data | action %action | handler %handler"
-    //% channel.min=0 channel.max=3 channel.defl=0
-    //% weight=50
-    export function onCommand(
-        channel: number,
-        mode: number,
-        data: number,
-        action: PfAction,
-        handler: (eventValue: number) => void
-    ) {
-        let command = getCommand(channel, mode, data);
-
-        control.onEvent(
-            action === PfAction.Pressed
-                ? PF_PRESSED_ID + channel
-                : PF_RELEASED_ID + channel,
-            data === -1 ? EventBusValue.MICROBIT_EVT_ANY : command,
-            () => {
-                handler(control.eventValue());
-            }
-        );
-    }
-
-    /**
-     * Do something when a specific button is pressed or released on the PF speed remote control.
-     * @param channel the channel switch 0-3
-     * @param button the button
-     * @param action the trigger action
-     * @param handler body code to run when the event is raised
-     */
-    //% blockId=pfReceiver_infrared_on_speed_rc_command
-    //% block="on Speed RC command : channel %channel | button %button | action %action | handler %handler"
-    //% weight=90
-    export function onSpeedRCcommand(
-        channel: PfReceiverChannel,
-        button: PfSpeedControl,
-        action: PfAction,
-        handler: () => void
-    ) {
-        let command = (channel << 8) | button;
-
-        control.onEvent(
-            action === PfAction.Pressed
-                ? PF_PRESSED_ID + channel
-                : PF_RELEASED_ID + channel,
-            button === -1 ? EventBusValue.MICROBIT_EVT_ANY : command,
-            () => {
-                handler();
-            }
-        );
-    }
 
     /**
      * Do something when a specific state of buttons on the PF remote control is achieved.
@@ -278,7 +218,7 @@ namespace pfReceiver {
      * @param handler body code to run when the event is raised
      */
     //% blockId=pfReceiver_infrared_on_rc_command
-    //% block="on RC command : channel %channel | red %red | blue %blue | action %action | handler %handler"
+    //% block="on RC command : channel %channel | red %red | blue %blue | action %action"
     //% weight=95
     export function onRCcommand(
         channel: PfReceiverChannel,
@@ -301,8 +241,37 @@ namespace pfReceiver {
     }
 
     /**
+     * Do something when a specific button is pressed or released on the PF speed remote control.
+     * @param channel the channel switch 0-3
+     * @param button the button
+     * @param action the trigger action
+     * @param handler body code to run when the event is raised
+     */
+    //% blockId=pfReceiver_infrared_on_speed_rc_command
+    //% block="on Speed RC command : channel %channel | button %button | action %action"
+    //% weight=90
+    export function onSpeedRCcommand(
+        channel: PfReceiverChannel,
+        button: PfSpeedControl,
+        action: PfAction,
+        handler: () => void
+    ) {
+        let command = (channel << 8) | button;
+
+        control.onEvent(
+            action === PfAction.Pressed
+                ? PF_PRESSED_ID + channel
+                : PF_RELEASED_ID + channel,
+            button === -1 ? EventBusValue.MICROBIT_EVT_ANY : command,
+            () => {
+                handler();
+            }
+        );
+    }
+
+    /**
      * Starts saving commands from the PF remote controls from given channels.
-     * @param channels the array with channels number to record with
+     * @param channels the array with channels (0-3) number to record with
      */
     //% blockId=pfReceiver_record
     //% block="save RC commands from channels %channels"
@@ -312,6 +281,7 @@ namespace pfReceiver {
         recordedCommands = [];
         recordedChannels = channels;
     }
+
 
     /**
      * Stops saving commands.
@@ -356,5 +326,37 @@ namespace pfReceiver {
     //% weight=50
     export function getRecordedCommands() {
         return processCommands(recordedCommands, recordedChannels)
+    }
+
+    /**
+     * Do something when a specific command is sent.
+     * @param channel the channel switch 0-3
+     * @param mode the mode (binary eg. 0b100)
+     * @param data the data (binary eg. 0b0101) or -1 (triggers all events)
+     * @param action the trigger action
+     * @param handler body code to run when the event is raised
+     */
+    //% blockId=pfReceiver_on_command
+    //% block="on command : channel %channel | mode %mode | data %data | action %action"
+    //% channel.min=0 channel.max=3 channel.defl=0
+    //% weight=40
+    export function onCommand(
+        channel: PfReceiverChannel,
+        mode: number,
+        data: number,
+        action: PfAction,
+        handler: (eventValue: number) => void
+    ) {
+        let command = getCommand(channel, mode, data);
+
+        control.onEvent(
+            action === PfAction.Pressed
+                ? PF_PRESSED_ID + channel
+                : PF_RELEASED_ID + channel,
+            data === -1 ? EventBusValue.MICROBIT_EVT_ANY : command,
+            () => {
+                handler(control.eventValue());
+            }
+        );
     }
 }

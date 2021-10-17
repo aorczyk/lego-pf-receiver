@@ -91,7 +91,7 @@ pfReceiver.startRecord([0]);
 ```
 
 ### Parameters
-- `channels` - the array with channels number to record with
+- `channels` - the array with channels number (0-3) to record with
 
 
 ## pfReceiver.stopRecord
