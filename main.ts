@@ -331,8 +331,8 @@ namespace pfReceiver {
     /**
      * Do something when a specific command is sent.
      * @param channel the channel switch 0-3
-     * @param mode the mode (binary eg. 0b100)
-     * @param data the data (binary eg. 0b0101) or -1 (triggers all events)
+     * @param mode the mode (binary) eg: 0b100
+     * @param data the data (binary) or -1 (triggers all events) eg: 0b0101
      * @param action the trigger action
      * @param handler body code to run when the event is raised
      */

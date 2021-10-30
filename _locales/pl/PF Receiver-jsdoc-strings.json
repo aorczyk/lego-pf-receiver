@@ -1,7 +1,7 @@
 {
   "PfReceiverChannel": "Power Functions Receiver.\r\nOdbiera komendy z pilotów podczerwieni LEGO Power Functions.\r\n* Dokumentacja zdalnego sterowania LEGO Power Functions: https://www.philohome.com/pf/LEGO_Power_Functions_RC.pdf\r\n* (c) 2021, Adam Orczyk",
   "pfReceiver.connectIrReceiver": "Podłącza moduł odbiornika podczerwieni (np. Iduino ST1089) do określonego pinu.",
-  "pfReceiver.connectIrReceiver|param|pin": "Pin odbiornika podczerwieni, np.: DigitalPin.P0",
+  "pfReceiver.connectIrReceiver|param|pin": "Pin odbiornika podczerwieni, np. DigitalPin.P0",
   "pfReceiver.getRecordedCommands": "Zwraca nagrane komendy.",
   "pfReceiver.onCommand": "Wykonuje akcję, gdy odebrana jest określona komenda.",
   "pfReceiver.onCommand|param|action": "wyzwalacz akcji",
