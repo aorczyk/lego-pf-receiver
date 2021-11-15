@@ -3,18 +3,25 @@
 Receives commands from LEGO Power Functions remote controls using IR Receiver Module Iduino ST1089. Runs given function when speciveied button is pressed or released.
 
 ### Features:
-- all PF remote controls are supported
+- all Power Functions remote controls are supported
 - possibility to run action on RC button pressed or released
-- recording commands from given channels, which could be played by PF Transmitter extension
+- recording commands from given channels, which could be played by extension [PF Recorder](https://github.com/aorczyk/pf-recorder)
 
-### :warning: Warning!
+### References:
+- [LEGO Power Functions RC](https://www.philohome.com/pf/LEGO_Power_Functions_RC.pdf)
+
+## :warning: Warning!
 **Lighting the diode and the IR receiver with sunlight :sunny: or from an ordinary light bulb :bulb: may interfere with the signal reception.**
 
-## Installation
+## Use as Extension
 
-1. Open MakeCode and select '+ Extensions' in the 'Advanced' menu. 
-2. Enter the project URL https://github.com/aorczyk/lego-pf-receiver in the search field.
-3. Select the `PF Receiver` extension.
+This repository can be added as an **extension** in MakeCode.
+
+* open [https://makecode.microbit.org/](https://makecode.microbit.org/)
+* click on **New Project**
+* click on **Extensions** under the gearwheel menu
+* search for **https://github.com/aorczyk/lego-pf-receiver** and import
+
 
 # Documentation
 
