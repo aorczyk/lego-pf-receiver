@@ -1,6 +1,6 @@
 /**
  * Power Functions Receiver.
- * Receives commands from LEGO Power Functions remote controls.
+ * Receiving commands from LEGO Power Functions remote controls using IR Receiver Module Iduino ST1089. Running given function when specific button is pressed or released.
  * 
  * LEGO Power Functions RC documentation: https://www.philohome.com/pf/LEGO_Power_Functions_RC.pdf
  *
