@@ -13,15 +13,6 @@ Receiving commands from LEGO Power Functions remote controls using IR Receiver M
 ## :warning: Warning!
 **Lighting the diode and the IR receiver with sunlight :sunny: or from an ordinary light bulb :bulb: may interfere with the signal reception.**
 
-## Use as Extension
-
-This repository can be added as an **extension** in MakeCode.
-
-* open [https://makecode.microbit.org/](https://makecode.microbit.org/)
-* click on **New Project**
-* click on **Extensions** under the gearwheel menu
-* search for **https://github.com/aorczyk/lego-pf-receiver** and import
-
 
 # Documentation
 
