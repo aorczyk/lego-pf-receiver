@@ -26,12 +26,12 @@ let counter = 0;
 
 pfReceiver.onSpeedRCcommand(PfReceiverChannel.Channel1, PfSpeedControl.RedIncrement, PfAction.Pressed, () => {
     counter += 1;
-    // basic.showNumber(counter)
+    basic.showNumber(counter)
 })
 
 pfReceiver.onSpeedRCcommand(PfReceiverChannel.Channel1, PfSpeedControl.RedDecrement, PfAction.Pressed, () => {
     counter -= 1;
-    // basic.showNumber(counter)
+    basic.showNumber(counter)
 })
 
 pfReceiver.onSpeedRCcommand(PfReceiverChannel.Channel2, PfSpeedControl.RedDecrement, PfAction.Pressed, () => {

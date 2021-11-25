@@ -3,7 +3,6 @@
 Receiving commands from LEGO Power Functions remote controls using IR Receiver Module Iduino ST1089. Running given function when specific button is pressed or released.
 
 ### Features:
-- all Power Functions remote controls are supported
 - possibility to run action on RC button pressed or released
 - recording commands from given channels, which could be played by extension [PF Recorder](https://github.com/aorczyk/pf-recorder)
 
