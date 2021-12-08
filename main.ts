@@ -345,7 +345,7 @@ namespace pfReceiver {
         mode: number,
         data: number,
         action: PfAction,
-        handler: (eventValue: number) => void
+        handler: () => void
     ) {
         let command = getCommand(channel, mode, data);
 
@@ -355,7 +355,7 @@ namespace pfReceiver {
                 : PF_RELEASED_ID + channel,
             data === -1 ? EventBusValue.MICROBIT_EVT_ANY : command,
             () => {
-                handler(control.eventValue());
+                handler();
             }
         );
     }
